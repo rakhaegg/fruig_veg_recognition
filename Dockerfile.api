@@ -1,12 +1,19 @@
 FROM python:3.12.3-slim
 
 WORKDIR /app
-COPY requirements_deploy.txt .
-RUN pip install --no-cache-dir -r requirements_deploy.txt
 
+# Dep
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# App
 COPY api ./api
 COPY model ./model
 COPY data/price_list.csv ./data/price_list.csv
-COPY data/dataset/train ./data/dataset/train    
+COPY data/dataset/train ./data/dataset/train
+COPY frontend ./frontend
+COPY config.toml .
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000 8501
+CMD uvicorn api.main:app --host 0.0.0.0 --port 8000 & \
+    streamlit run frontend/app.py --server.port 8501
