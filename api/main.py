@@ -14,6 +14,7 @@ from io import BytesIO
 import pandas as pd
 from pathlib import Path
 import logging, time
+import json
 
 # ────────────────────────────────────────────────────────────────────────────
 # Konstanta & jalur
@@ -92,3 +93,12 @@ async def predict(file: UploadFile = File(...)):
             for i in top3
         ]
     return result
+
+METRICS_PATH = Path("model/metrics.json")
+METRICS = json.loads(METRICS_PATH.read_text()) if METRICS_PATH.exists() else None
+
+@app.get("/model-metrics")
+def model_metrics():
+    if METRICS is None:
+        raise HTTPException(404, "metrics.json not found")
+    return METRICS

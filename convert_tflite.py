@@ -1,6 +1,6 @@
 """
 convert_tflite.py
-▪ Memuat model/fruitveg.keras
+▪ Memuat model/fruitveg_finetune.keras
 ▪ Full-integer quantization memakai 100 contoh gambar
 ▪ Menyimpan fruitveg_int8.tflite
 """
@@ -12,7 +12,7 @@ from random import sample
 from tqdm import tqdm
 from PIL import Image
 
-MODEL_PATH = Path("model/fruitveg.keras")
+MODEL_PATH = Path("model/fruitveg_finetune.keras")
 DATA_DIR   = Path("data/dataset/train")      # pakai set train utk representative
 TFLITE_OUT = Path("model/fruitveg_int8.tflite")
 IMG_SIZE   = (224, 224)

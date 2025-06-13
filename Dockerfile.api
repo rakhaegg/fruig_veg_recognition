@@ -1,19 +1,14 @@
 FROM python:3.12.3-slim
-
 WORKDIR /app
 
-# Dep
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements_deploy.txt .
+RUN pip install --no-cache-dir -r requirements_deploy.txt
 
-# App
 COPY api ./api
-COPY model ./model
+COPY model/fruitveg_int8.tflite ./model/fruitveg_int8.tflite
+COPY model/metrics.json            ./model/metrics.json  
 COPY data/price_list.csv ./data/price_list.csv
-COPY data/dataset/train ./data/dataset/train
-COPY frontend ./frontend
-COPY config.toml .
+COPY data/dataset/train ./data/dataset/train  
 
-EXPOSE 8000 8501
-CMD uvicorn api.main:app --host 0.0.0.0 --port 8000 & \
-    streamlit run frontend/app.py --server.port 8501
+EXPOSE 8000
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]

@@ -8,6 +8,7 @@ from pathlib import Path
 import time
 import requests
 import streamlit as st
+import pandas as pd, altair as alt, requests, json
 
 # ─── Baca config.toml (tomllib ≥ Py3.11, tomli utk 3.10↓) ──────────────────
 try:
@@ -88,3 +89,41 @@ if img_file and st.button("⏩ Predict"):
                         "(dipilih manual)",
                         unsafe_allow_html=True,
                     )
+
+@st.cache_data(show_spinner=False)
+def get_metrics():
+    try:
+        r = requests.get(API_URL.replace("/predict", "/model-metrics"), timeout=5)
+        r.raise_for_status()
+        return r.json()
+    except Exception:
+        return None
+
+metrics = get_metrics()
+
+with st.sidebar:
+    st.header("📊 Evaluasi Model")
+    if metrics:
+        st.metric("Accuracy", f"{metrics['accuracy']*100:.2f} %")
+
+        # Tabel precision / recall
+        df = pd.DataFrame({
+            "class": metrics["per_class"]["labels"],
+            "precision": metrics["per_class"]["precision"],
+            "recall":    metrics["per_class"]["recall"],
+            "f1":        metrics["per_class"]["f1"],
+        }).sort_values("recall", ascending=False)
+        st.dataframe(df, height=240)
+
+        # Confusion matrix heatmap (Altair)
+        cm = pd.DataFrame(metrics["confusion_matrix"],
+                          index=metrics["per_class"]["labels"],
+                          columns=metrics["per_class"]["labels"]).reset_index().melt(id_vars="index")
+        heat = alt.Chart(cm).mark_rect().encode(
+            x=alt.X('variable:N', title='Predicted'),
+            y=alt.Y('index:N', title='True'),
+            color=alt.Color('value:Q', scale=alt.Scale(scheme='blues'))
+        ).properties(height=300)
+        st.altair_chart(heat, use_container_width=True)
+    else:
+        st.info("Model metrics belum tersedia.")

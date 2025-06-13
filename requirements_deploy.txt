@@ -4,3 +4,5 @@ tensorflow==2.19.0
 pillow
 pandas
 python-multipart==0.0.20
+altair
+requests

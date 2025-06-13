@@ -1,5 +1,5 @@
 [api]
-url = "http://localhost:8000/predict"
+url = "http://api:8000/predict"  
 
 [ui]
 confidence_green = 0.90     # ≥90 % hijau
